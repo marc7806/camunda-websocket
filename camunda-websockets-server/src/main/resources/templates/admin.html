@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Camunda Websocket Example</title>
+    <script th:src="@{/js/sockjs.min.js}"></script>
+    <script th:src="@{/js/stomp.min.js}"></script>
+    <script type="text/javascript">
+        var stompClient = null;
+
+        function connect() {
+            const socket = new SockJS('/travels');
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                document.getElementById('status').innerText = 'Connected'
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/travels', function (message) {
+                    displayMessage(JSON.parse(message.body));
+                });
+            });
+
+            window.onbeforeunload = function () {
+                console.log("Disconnect")
+                stompClient.disconnect()
+            }
+        }
+
+        function displayMessage(message) {
+            let response = document.getElementById('processes');
+            let p = document.createElement('p');
+            p.style.wordWrap = 'break-word';
+            p.appendChild(document.createTextNode(message.startTime + ": Travel Process (" + message.processId + ") started by User ("
+                + message.assignee + ")"));
+            response.appendChild(p);
+        }
+    </script>
+</head>
+
+<body onload="connect()">
+<div>
+    <div><span id="status">Disconnected</span></div>
+    <h1>Travel Processes:</h1>
+    <div id="processes"></div>
+</div>
+
+</body>
+</html>
