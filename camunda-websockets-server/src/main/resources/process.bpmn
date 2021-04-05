@@ -1,37 +1,166 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_0fr9mxs" targetNamespace="http://bpmn.io/schema/bpmn">
-  <bpmn:process id="camunda-websockets-process" isExecutable="true">
-    <bpmn:startEvent id="StartEvent_1">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_0fr9mxs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.2.0">
+  <bpmn:process id="travel-process-id" name="Travel Process" isExecutable="true">
+    <bpmn:startEvent id="travel_process" name="Start travel">
       <bpmn:outgoing>SequenceFlow_1fp17al</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:sequenceFlow id="SequenceFlow_1fp17al" sourceRef="StartEvent_1" targetRef="say-hello" />
-    <bpmn:endEvent id="EndEvent_0x6ir2l">
-      <bpmn:incoming>SequenceFlow_16gzt2m</bpmn:incoming>
+    <bpmn:sequenceFlow id="SequenceFlow_1fp17al" sourceRef="travel_process" targetRef="pick-destination" />
+    <bpmn:endEvent id="EndEvent_0x6ir2l" name="Travel end">
+      <bpmn:incoming>Flow_14fdtmc</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="SequenceFlow_16gzt2m" sourceRef="say-hello" targetRef="EndEvent_0x6ir2l" />
-    <bpmn:userTask id="say-hello" name="Say hello to&#10;demo" camunda:candidateUsers="demo">
+    <bpmn:sequenceFlow id="SequenceFlow_16gzt2m" sourceRef="pick-destination" targetRef="Gateway_1rg3c8q" />
+    <bpmn:userTask id="pick-destination" name="Select destination" camunda:candidateUsers="demo">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="destination" label="Select your travel destination" type="enum">
+            <camunda:validation>
+              <camunda:constraint name="required" />
+            </camunda:validation>
+            <camunda:value id="london" name="London" />
+            <camunda:value id="barcelona" name="Barcelona" />
+            <camunda:value id="munich" name="Munich" />
+            <camunda:value id="new_york" name="New York" />
+          </camunda:formField>
+        </camunda:formData>
+      </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_1fp17al</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_16gzt2m</bpmn:outgoing>
     </bpmn:userTask>
+    <bpmn:parallelGateway id="Gateway_1rg3c8q">
+      <bpmn:incoming>SequenceFlow_16gzt2m</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ookouv</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0sn6y1l</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0jxiyoa</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:sequenceFlow id="Flow_1ookouv" sourceRef="Gateway_1rg3c8q" targetRef="check-weather" />
+    <bpmn:sequenceFlow id="Flow_0sn6y1l" sourceRef="Gateway_1rg3c8q" targetRef="pack-travel-bag" />
+    <bpmn:sequenceFlow id="Flow_0jxiyoa" sourceRef="Gateway_1rg3c8q" targetRef="book-flight" />
+    <bpmn:sequenceFlow id="Flow_0hu001v" sourceRef="check-weather" targetRef="Gateway_07ti1qh" />
+    <bpmn:parallelGateway id="Gateway_07ti1qh">
+      <bpmn:incoming>Flow_0hu001v</bpmn:incoming>
+      <bpmn:incoming>Flow_157ollu</bpmn:incoming>
+      <bpmn:incoming>Flow_0monlk9</bpmn:incoming>
+      <bpmn:outgoing>Flow_1oiz3vq</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:sequenceFlow id="Flow_157ollu" sourceRef="pack-travel-bag" targetRef="Gateway_07ti1qh" />
+    <bpmn:sequenceFlow id="Flow_0monlk9" sourceRef="book-flight" targetRef="Gateway_07ti1qh" />
+    <bpmn:manualTask id="pack-travel-bag" name="Pack travel bag">
+      <bpmn:incoming>Flow_0sn6y1l</bpmn:incoming>
+      <bpmn:outgoing>Flow_157ollu</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:manualTask id="check-weather" name="Check weather">
+      <bpmn:incoming>Flow_1ookouv</bpmn:incoming>
+      <bpmn:outgoing>Flow_0hu001v</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:userTask id="book-flight" name="Book flight">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="destination" label="Selected Destination" type="string" defaultValue="${destination}">
+            <camunda:validation>
+              <camunda:constraint name="readonly" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="flightIsBooked" label="Confirm flight booking" type="boolean" defaultValue="null">
+            <camunda:validation>
+              <camunda:constraint name="required" />
+            </camunda:validation>
+          </camunda:formField>
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0jxiyoa</bpmn:incoming>
+      <bpmn:outgoing>Flow_0monlk9</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1oiz3vq" sourceRef="Gateway_07ti1qh" targetRef="Event_1tcrw1d" />
+    <bpmn:intermediateCatchEvent id="Event_1tcrw1d" name="Wait for travel finish">
+      <bpmn:incoming>Flow_1oiz3vq</bpmn:incoming>
+      <bpmn:outgoing>Flow_14fdtmc</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1yjkfj6">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT5M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_14fdtmc" sourceRef="Event_1tcrw1d" targetRef="EndEvent_0x6ir2l" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="camunda-websockets-process">
-      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
-        <dc:Bounds x="179" y="99" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="SequenceFlow_1fp17al_di" bpmnElement="SequenceFlow_1fp17al">
-        <di:waypoint x="215" y="117" />
-        <di:waypoint x="270" y="117" />
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="travel-process-id">
+      <bpmndi:BPMNEdge id="Flow_14fdtmc_di" bpmnElement="Flow_14fdtmc">
+        <di:waypoint x="948" y="237" />
+        <di:waypoint x="1042" y="237" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="EndEvent_0x6ir2l_di" bpmnElement="EndEvent_0x6ir2l">
-        <dc:Bounds x="432" y="99" width="36" height="36" />
-      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1oiz3vq_di" bpmnElement="Flow_1oiz3vq">
+        <di:waypoint x="825" y="237" />
+        <di:waypoint x="912" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0monlk9_di" bpmnElement="Flow_0monlk9">
+        <di:waypoint x="690" y="350" />
+        <di:waypoint x="800" y="350" />
+        <di:waypoint x="800" y="262" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_157ollu_di" bpmnElement="Flow_157ollu">
+        <di:waypoint x="690" y="237" />
+        <di:waypoint x="775" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0hu001v_di" bpmnElement="Flow_0hu001v">
+        <di:waypoint x="690" y="120" />
+        <di:waypoint x="800" y="120" />
+        <di:waypoint x="800" y="212" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jxiyoa_di" bpmnElement="Flow_0jxiyoa">
+        <di:waypoint x="480" y="262" />
+        <di:waypoint x="480" y="350" />
+        <di:waypoint x="590" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0sn6y1l_di" bpmnElement="Flow_0sn6y1l">
+        <di:waypoint x="505" y="237" />
+        <di:waypoint x="590" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ookouv_di" bpmnElement="Flow_1ookouv">
+        <di:waypoint x="480" y="212" />
+        <di:waypoint x="480" y="120" />
+        <di:waypoint x="590" y="120" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_16gzt2m_di" bpmnElement="SequenceFlow_16gzt2m">
-        <di:waypoint x="370" y="117" />
-        <di:waypoint x="432" y="117" />
+        <di:waypoint x="400" y="237" />
+        <di:waypoint x="455" y="237" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="UserTask_08mft2c_di" bpmnElement="say-hello">
-        <dc:Bounds x="270" y="77" width="100" height="80" />
+      <bpmndi:BPMNEdge id="SequenceFlow_1fp17al_di" bpmnElement="SequenceFlow_1fp17al">
+        <di:waypoint x="215" y="237" />
+        <di:waypoint x="300" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="travel_process">
+        <dc:Bounds x="179" y="219" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="262" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0x6ir2l_di" bpmnElement="EndEvent_0x6ir2l">
+        <dc:Bounds x="1042" y="219" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1034" y="262" width="52" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_08mft2c_di" bpmnElement="pick-destination">
+        <dc:Bounds x="300" y="197" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_19bfqo7_di" bpmnElement="Gateway_1rg3c8q">
+        <dc:Bounds x="455" y="212" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_18b78i6_di" bpmnElement="Gateway_07ti1qh">
+        <dc:Bounds x="775" y="212" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1w2te75_di" bpmnElement="pack-travel-bag">
+        <dc:Bounds x="590" y="197" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ex3v8o_di" bpmnElement="check-weather">
+        <dc:Bounds x="590" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_000g1mh_di" bpmnElement="book-flight">
+        <dc:Bounds x="590" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1xpa4xo_di" bpmnElement="Event_1tcrw1d">
+        <dc:Bounds x="912" y="219" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="896" y="262" width="68" height="27" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
