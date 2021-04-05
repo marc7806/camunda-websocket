@@ -1,4 +1,4 @@
-package com.marc7806;
+package com.marc7806.camundasockets;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
